@@ -151,6 +151,7 @@ void MainWindow::stopTransmission(){
     str = "<font color=\"black\">"+ data +"</font>";
     showMessage(str);
 
+
     ui->btnStart->setEnabled(true);
     ui->btnStop->setEnabled(false);
     ui->minSlider->setEnabled(true);
