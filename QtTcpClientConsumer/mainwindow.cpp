@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
+#include <QTimer>
 #include <QDateTime>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -9,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
   ui->setupUi(this);
   socket = new QTcpSocket(this);
-  //timer = new QTimer(this);
+  timer = new QTimer(this);
   //tcpConnect();
   connect(ui->btnConnect,
           SIGNAL(clicked(bool)),
@@ -40,6 +41,10 @@ MainWindow::MainWindow(QWidget *parent) :
           SIGNAL(itemClicked(QListWidgetItem*)),
           this,
           SLOT(onHostSelected(QListWidgetItem*)));
+  connect(timer,
+          SIGNAL(timeout()),
+          this,
+          SLOT(getData()));
 
   ui->btnConnect->setEnabled(true);
   ui->btnDisconnect->setEnabled(false);
@@ -153,9 +158,6 @@ void MainWindow::showMessage(QString msg){
 
 void MainWindow::startReception(){
 
-    QString str;
-    QStringList list;
-
     ui->btnStart->setEnabled(false);
     ui->btnStop->setEnabled(true);
     ui->timingSlider->setEnabled(false);
@@ -164,6 +166,32 @@ void MainWindow::startReception(){
 
     QString ip = ui->listHost->currentItem()->text();
     qDebug() << "Get Data From "+ ui->listHost->currentItem()->text();
+
+    int sec = ui->timingSlider->value();
+    timer->start(sec*1000);
+
+}
+
+void MainWindow::stopReception(){
+    timer->stop();
+    ui->btnStart->setEnabled(true);
+    ui->btnStop->setEnabled(false);
+    ui->timingSlider->setEnabled(true);
+    ui->listHost->setEnabled(true);
+    ui->btnUpdate->setEnabled(true);
+}
+
+void MainWindow::onHostSelected(QListWidgetItem *item){
+    qDebug() << "Selected " + item->text();
+    ui->btnStart->setEnabled(true);
+    ui->timingSlider->setEnabled(true);
+
+}
+
+
+void MainWindow::getData(){
+    QString str;
+    QStringList list;
 
     if(socket->state() == QAbstractSocket::ConnectedState){
       if(socket->isOpen()){
@@ -195,51 +223,6 @@ void MainWindow::startReception(){
         }
       }
     }
-
-}
-
-void MainWindow::stopReception(){
-    ui->btnStart->setEnabled(true);
-    ui->btnStop->setEnabled(false);
-    ui->timingSlider->setEnabled(true);
-    ui->listHost->setEnabled(true);
-    ui->btnUpdate->setEnabled(true);
-}
-
-void MainWindow::onHostSelected(QListWidgetItem *item){
-    qDebug() << "Selected " + item->text();
-    ui->btnStart->setEnabled(true);
-    ui->timingSlider->setEnabled(true);
-
-}
-
-
-void MainWindow::getData(){
-  QString str;
-  QByteArray array;
-  QStringList list;
-  qint64 thetime;
-  qDebug() << "to get data...";
-  if(socket->state() == QAbstractSocket::ConnectedState){
-    if(socket->isOpen()){
-      qDebug() << "reading...";
-      socket->write("get 127.0.0.1 5\r\n");
-      socket->waitForBytesWritten();
-      socket->waitForReadyRead();
-      qDebug() << socket->bytesAvailable();
-      while(socket->bytesAvailable()){
-        str = socket->readLine().replace("\n","").replace("\r","");
-        list = str.split(" ");
-        if(list.size() == 2){
-          bool ok;
-          str = list.at(0);
-          thetime = str.toLongLong(&ok);
-          str = list.at(1);
-          qDebug() << thetime << ": " << str;
-        }
-      }
-    }
-  }
 }
 
 
@@ -247,4 +230,5 @@ MainWindow::~MainWindow()
 {
   delete socket;
   delete ui;
+  delete timer;
 }

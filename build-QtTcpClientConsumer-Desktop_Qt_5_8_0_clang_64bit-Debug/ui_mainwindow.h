@@ -145,12 +145,15 @@ public:
         horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
         timingSlider = new QSlider(layoutWidget);
         timingSlider->setObjectName(QStringLiteral("timingSlider"));
+        timingSlider->setMinimum(1);
+        timingSlider->setMaximum(100);
         timingSlider->setOrientation(Qt::Horizontal);
 
         horizontalLayout_2->addWidget(timingSlider);
 
         label_2 = new QLabel(layoutWidget);
         label_2->setObjectName(QStringLiteral("label_2"));
+        label_2->setMinimumSize(QSize(0, 0));
 
         horizontalLayout_2->addWidget(label_2);
 
@@ -196,6 +199,7 @@ public:
         MainWindow->setStatusBar(statusBar);
 
         retranslateUi(MainWindow);
+        QObject::connect(timingSlider, SIGNAL(valueChanged(int)), label_2, SLOT(setNum(int)));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
