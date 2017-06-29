@@ -124,7 +124,7 @@ void MainWindow::generateInput(){
         qint64 now = QDateTime::currentMSecsSinceEpoch();
         int min = ui->minSlider->value();
         int max = ui->maxSlider->value();
-        int dado = qrand() % ((max + min) - min) + min;
+        int dado = (min + qrand()% (max + 1 - min));
 
         QString data = "set "+QString::number(now)+" "+QString::number(dado);
 
